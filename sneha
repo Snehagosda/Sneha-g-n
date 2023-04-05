@@ -1,0 +1,89 @@
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+public class ProductScraper {
+    public static void main(String[] args) {
+        String url = "https://www.staples.com/Computer-office-desks/cat_CL210795/663ea?icid=BTS:2020:STUDYSPACE:DESKS";
+        List<Product> products = new ArrayList<>();
+        try {
+            Document doc = Jsoup.connect(url).get();
+            Elements elements = doc.select(".card__body");
+            for (Element element : elements) {
+                String name = element.select(".card__title").text();
+                String price = element.select(".card__price").text();
+                String itemNumber = element.select(".card__link").attr("data-skuid");
+                String modelNumber = element.select(".card__link").attr("data-itemid");
+                String category = "Computer Office Desks";
+                String description = element.select(".card__description").text();
+                products.add(new Product(name, price, itemNumber, modelNumber, category, description));
+            }
+            writeToFile(products);
+            System.out.println("Data written to CSV file successfully!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void writeToFile(List<Product> products) throws IOException {
+        FileWriter writer = new FileWriter("products.csv");
+        writer.append("Product Name,Product Price,Item Number,Model Number,Product Category,Product Description\n");
+        for (Product product : products) {
+            writer.append(product.getName()).append(",")
+                  .append(product.getPrice()).append(",")
+                  .append(product.getItemNumber()).append(",")
+                  .append(product.getModelNumber()).append(",")
+                  .append(product.getCategory()).append(",")
+                  .append(product.getDescription()).append("\n");
+        }
+        writer.flush();
+        writer.close();
+    }
+}
+
+class Product {
+    private String name;
+    private String price;
+    private String itemNumber;
+    private String modelNumber;
+    private String category;
+    private String description;
+
+    public Product(String name, String price, String itemNumber, String modelNumber, String category, String description) {
+        this.name = name;
+        this.price = price;
+        this.itemNumber = itemNumber;
+        this.modelNumber = modelNumber;
+        this.category = category;
+        this.description = description;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getPrice() {
+        return price;
+    }
+
+    public String getItemNumber() {
+        return itemNumber;
+    }
+
+    public String getModelNumber() {
+        return modelNumber;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+}
